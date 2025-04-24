@@ -19,7 +19,7 @@ const ReactionTest: React.FC<ReactionTestProps> = ({ onGameWin, onGameRestart })
   
   // Required attempts and target time to win
   const requiredAttempts = 5;
-  const targetTime = 300; // milliseconds
+  const targetTime = 600; // milliseconds
   
   // Start game
   const startGame = () => {
