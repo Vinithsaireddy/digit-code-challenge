@@ -3,16 +3,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGame } from "@/contexts/GameContext";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import GameCard from "@/components/GameCard";
 import TeamCodeDisplay from "@/components/TeamCodeDisplay";
 
 const GameHub = () => {
-  const { selectedTeam, games, completeGame, hasWon, resetProgress } = useGame();
+  const { selectedTeam, games, hasWon, resetProgress } = useGame();
   const navigate = useNavigate();
-  const [currentGameId, setCurrentGameId] = useState<number | null>(null);
-  const [showDigitDialog, setShowDigitDialog] = useState<boolean>(false);
-  const [discoveredDigit, setDiscoveredDigit] = useState<number | null>(null);
   
   // Check if team is selected
   useEffect(() => {
@@ -24,24 +20,8 @@ const GameHub = () => {
   }, [selectedTeam, navigate, hasWon]);
 
   const handlePlayGame = (gameId: number) => {
-    setCurrentGameId(gameId);
-    // Simulate winning a game
-    const randomDigit = Math.floor(Math.random() * 10);
-    setDiscoveredDigit(randomDigit);
-    setShowDigitDialog(true);
-  };
-
-  const handleConfirmDigit = () => {
-    if (currentGameId !== null && discoveredDigit !== null) {
-      completeGame(currentGameId, discoveredDigit);
-      setShowDigitDialog(false);
-      setCurrentGameId(null);
-      
-      // Check if all games are completed after this one
-      if (hasWon()) {
-        setTimeout(() => navigate("/victory"), 1000);
-      }
-    }
+    // Navigate to the specific game page instead of showing dialog
+    navigate(`/games/${gameId}`);
   };
 
   if (!selectedTeam) {
@@ -85,43 +65,10 @@ const GameHub = () => {
               key={game.id}
               game={game}
               onPlay={() => handlePlayGame(game.id)}
-              disabled={game.completed}
             />
           ))}
         </div>
       </main>
-      
-      {/* Game Win Dialog */}
-      <Dialog open={showDigitDialog} onOpenChange={setShowDigitDialog}>
-        <DialogContent className="bg-game-dark-surface border border-game-neon-cyan">
-          <DialogHeader>
-            <DialogTitle className="text-3xl font-bold text-game-neon-cyan">
-              Game Complete!
-            </DialogTitle>
-            <DialogDescription className="text-lg text-gray-300">
-              You've discovered a digit from your team code.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-8 flex flex-col items-center">
-            <div className="text-7xl font-bold text-game-neon-cyan neon-text mb-4 animate-pulse-glow">
-              {discoveredDigit}
-            </div>
-            <p className="text-gray-400 text-center">
-              This digit is part of the {selectedTeam.name} secret code.
-            </p>
-          </div>
-          
-          <DialogFooter>
-            <Button 
-              className="bg-game-neon-cyan text-black hover:bg-game-neon-cyan/80 w-full"
-              onClick={handleConfirmDigit}
-            >
-              Continue
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

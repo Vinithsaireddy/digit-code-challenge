@@ -8,10 +8,9 @@ import { Game } from "@/contexts/GameContext";
 type GameCardProps = {
   game: Game;
   onPlay: () => void;
-  disabled?: boolean;
 };
 
-const GameCard: React.FC<GameCardProps> = ({ game, onPlay, disabled = false }) => {
+const GameCard: React.FC<GameCardProps> = ({ game, onPlay }) => {
   const { title, description, difficulty, completed, digit } = game;
 
   const getDifficultyColor = (difficulty: string) => {
@@ -57,9 +56,8 @@ const GameCard: React.FC<GameCardProps> = ({ game, onPlay, disabled = false }) =
           variant={completed ? "outline" : "default"}
           className={completed ? "border border-game-neon-cyan text-game-neon-cyan" : "bg-primary"}
           onClick={onPlay}
-          disabled={disabled}
         >
-          {completed ? "Completed" : "Play Game"}
+          {completed ? "Play Again" : "Play Game"}
         </Button>
       </CardFooter>
     </Card>

@@ -15,6 +15,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import TeamSelection from "./pages/TeamSelection";
 import GameHub from "./pages/GameHub";
+import GameTemplate from "./pages/games/GameTemplate";
 import Victory from "./pages/Victory";
 import NotFound from "./pages/NotFound";
 
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/team-selection" element={<TeamSelection />} />
               <Route path="/games" element={<GameHub />} />
+              <Route path="/games/:id" element={<GameTemplate />} />
               <Route path="/victory" element={<Victory />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
