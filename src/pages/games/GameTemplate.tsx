@@ -1,10 +1,18 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useGame } from "@/contexts/GameContext";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Timer, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
+
+// Import game components
+import MemoryMatch from "@/components/games/MemoryMatch";
+import QuickMath from "@/components/games/QuickMath";
+import WordScramble from "@/components/games/WordScramble";
+import PatternMemory from "@/components/games/PatternMemory";
+import ReactionTest from "@/components/games/ReactionTest";
+import CodeBreaker from "@/components/games/CodeBreaker";
 
 const GameTemplate = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,7 +20,6 @@ const GameTemplate = () => {
   const { games, completeGame } = useGame();
   const [showDigitDialog, setShowDigitDialog] = useState<boolean>(false);
   const [discoveredDigit, setDiscoveredDigit] = useState<number | null>(null);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
   
   const gameId = parseInt(id || "1");
   const game = games.find(g => g.id === gameId);
@@ -21,16 +28,15 @@ const GameTemplate = () => {
     return <div className="text-center p-8 text-white">Game not found</div>;
   }
 
-  const handleStartGame = () => {
-    setIsPlaying(true);
-  };
-  
-  const handleEndGame = () => {
-    // Simulate winning the game with a random digit
+  const handleGameWin = () => {
+    // Generate a random digit between 0-9 when the game is won
     const randomDigit = Math.floor(Math.random() * 10);
     setDiscoveredDigit(randomDigit);
     setShowDigitDialog(true);
-    setIsPlaying(false);
+  };
+  
+  const handleGameRestart = () => {
+    // Just restart the game without showing the digit dialog
   };
 
   const handleConfirmDigit = () => {
@@ -41,44 +47,24 @@ const GameTemplate = () => {
     }
   };
   
-  // This would be replaced with the actual game content
-  const renderGameContent = () => {
-    return (
-      <div className="flex flex-col items-center justify-center h-[300px] bg-game-dark-surface border border-gray-700 rounded-lg p-4">
-        <h3 className="text-xl font-bold text-game-neon-cyan mb-6">{game.title} Game</h3>
-        
-        {!isPlaying ? (
-          <div className="text-center">
-            <p className="text-gray-300 mb-8">Ready to play? Click the button to begin!</p>
-            <Button 
-              onClick={handleStartGame}
-              className="bg-game-neon-purple hover:bg-game-neon-purple/80 text-white"
-            >
-              Start Game
-            </Button>
-          </div>
-        ) : (
-          <div className="text-center">
-            <div className="flex flex-col items-center justify-center gap-4">
-              <p className="text-gray-300">Game in progress...</p>
-              <div className="animate-pulse text-5xl text-game-neon-purple mb-4">
-                <Timer className="h-16 w-16" />
-              </div>
-              <p className="text-sm text-gray-400 mb-8">
-                This is a placeholder. In a real game, actual game content would appear here.
-              </p>
-              
-              <Button
-                onClick={handleEndGame}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                Complete Game
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
+  // Render the appropriate game component based on gameId
+  const renderGame = () => {
+    switch (gameId) {
+      case 1:
+        return <MemoryMatch onGameWin={handleGameWin} onGameRestart={handleGameRestart} />;
+      case 2:
+        return <QuickMath onGameWin={handleGameWin} onGameRestart={handleGameRestart} />;
+      case 3:
+        return <WordScramble onGameWin={handleGameWin} onGameRestart={handleGameRestart} />;
+      case 4:
+        return <PatternMemory onGameWin={handleGameWin} onGameRestart={handleGameRestart} />;
+      case 5:
+        return <ReactionTest onGameWin={handleGameWin} onGameRestart={handleGameRestart} />;
+      case 6:
+        return <CodeBreaker onGameWin={handleGameWin} onGameRestart={handleGameRestart} />;
+      default:
+        return <div className="text-center p-8 text-white">Game not found</div>;
+    }
   };
   
   return (
@@ -107,7 +93,9 @@ const GameTemplate = () => {
             </div>
           </div>
           
-          {renderGameContent()}
+          <div className="bg-game-dark-surface border border-gray-700 rounded-lg p-4">
+            {renderGame()}
+          </div>
         </div>
       </main>
       

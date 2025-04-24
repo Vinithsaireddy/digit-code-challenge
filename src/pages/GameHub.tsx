@@ -20,7 +20,7 @@ const GameHub = () => {
   }, [selectedTeam, navigate, hasWon]);
 
   const handlePlayGame = (gameId: number) => {
-    // Navigate to the specific game page instead of showing dialog
+    // Navigate to the specific game page
     navigate(`/games/${gameId}`);
   };
 
