@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useGame } from "@/contexts/GameContext";
@@ -17,7 +16,7 @@ import CodeBreaker from "@/components/games/CodeBreaker";
 const GameTemplate = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { games, completeGame } = useGame();
+  const { games, completeGame, selectedTeam } = useGame();
   const [showDigitDialog, setShowDigitDialog] = useState<boolean>(false);
   const [discoveredDigit, setDiscoveredDigit] = useState<number | null>(null);
   
@@ -29,10 +28,12 @@ const GameTemplate = () => {
   }
 
   const handleGameWin = () => {
-    // Generate a random digit between 0-9 when the game is won
-    const randomDigit = Math.floor(Math.random() * 10);
-    setDiscoveredDigit(randomDigit);
-    setShowDigitDialog(true);
+    // Get the corresponding digit from team code based on game number
+    if (selectedTeam) {
+      const digit = parseInt(selectedTeam.code[gameId - 1]); // -1 because game IDs start at 1
+      setDiscoveredDigit(digit);
+      setShowDigitDialog(true);
+    }
   };
   
   const handleGameRestart = () => {
