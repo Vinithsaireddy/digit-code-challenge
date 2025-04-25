@@ -36,6 +36,7 @@ const CodeBreaker: React.FC<CodeBreakerProps> = ({ onGameWin, onGameRestart }) =
 
   const startGame = () => {
     const newCode = generateCode();
+    console.log("Secret Code:", newCode);
     setSecretCode(newCode);
     setGameStarted(true);
     setCurrentGuess(["", "", "", ""]);
