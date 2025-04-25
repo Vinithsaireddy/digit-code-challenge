@@ -16,11 +16,11 @@ const ReactionTest: React.FC<ReactionTestProps> = ({ onGameWin, onGameRestart })
   const [bestTime, setBestTime] = useState<number | null>(null);
   const [attempts, setAttempts] = useState<number>(0);
   const [gameWon, setGameWon] = useState<boolean>(false);
-  
+
   // Required attempts and target time to win
   const requiredAttempts = 5;
-  const targetTime = 600; // milliseconds
-  
+  const targetTime = 250; // milliseconds
+
   // Start game
   const startGame = () => {
     setGameStarted(true);
@@ -30,14 +30,14 @@ const ReactionTest: React.FC<ReactionTestProps> = ({ onGameWin, onGameRestart })
     setGameWon(false);
     prepareTest();
   };
-  
+
   // Prepare for a new test
   const prepareTest = () => {
     setGameState("waiting");
-    
+
     // Random delay between 1-5 seconds
     const delay = Math.floor(Math.random() * 4000) + 1000;
-    
+
     setTimeout(() => {
       if (gameState !== "tooEarly") {
         setStartTime(Date.now());
@@ -45,7 +45,7 @@ const ReactionTest: React.FC<ReactionTestProps> = ({ onGameWin, onGameRestart })
       }
     }, delay);
   };
-  
+
   // Handle click on the target
   const handleClick = () => {
     if (gameState === "waiting") {
@@ -56,24 +56,24 @@ const ReactionTest: React.FC<ReactionTestProps> = ({ onGameWin, onGameRestart })
       // Valid click, calculate reaction time
       const endTime = Date.now();
       const time = endTime - startTime;
-      
+
       setReactionTime(time);
       setGameState("clicked");
-      
+
       // Update best time if applicable
       if (bestTime === null || time < bestTime) {
         setBestTime(time);
       }
-      
+
       // Check win condition if required attempts are completed
       if (attempts + 1 >= requiredAttempts) {
         if (bestTime !== null && bestTime <= targetTime) {
           setGameWon(true);
         }
       }
-      
+
       setAttempts(prev => prev + 1);
-      
+
       // Prepare for the next test after a delay
       setTimeout(() => {
         if (!gameWon && attempts + 1 >= requiredAttempts) {
@@ -85,14 +85,14 @@ const ReactionTest: React.FC<ReactionTestProps> = ({ onGameWin, onGameRestart })
       }, 1500);
     }
   };
-  
+
   // Effect to check if player has won
   useEffect(() => {
     if (gameWon) {
       onGameWin();
     }
   }, [gameWon, onGameWin]);
-  
+
   const restartGame = () => {
     setGameStarted(false);
     onGameRestart();
@@ -106,7 +106,18 @@ const ReactionTest: React.FC<ReactionTestProps> = ({ onGameWin, onGameRestart })
         <p className="text-gray-300 mb-6 text-center">
           When the color changes to green, click as fast as you can! Complete {requiredAttempts} attempts with your best time under {targetTime}ms to win.
         </p>
-        <Button 
+        <div className="bg-game-dark-card p-4 rounded-lg border border-gray-700 text-left max-w-md w-full mb-6">
+          <h4 className="text-lg font-semibold text-game-neon-purple mb-2">📜 Rules</h4>
+          <ul className="list-disc list-inside text-gray-300 space-y-1">
+            <li>Wait until the box turns <span className="text-game-neon-green font-bold">green</span>.</li>
+            <li>Click as fast as you can when it turns green.</li>
+            <li>If you click too early, it won’t count.</li>
+            <li>Complete <span className="font-semibold text-game-neon-cyan">{requiredAttempts}</span> rounds.</li>
+            <li>To win, your <span className="font-semibold text-game-neon-cyan">best reaction time</span> must be under <span className="font-semibold">{targetTime}ms</span>.</li>
+          </ul>
+        </div>
+
+        <Button
           onClick={startGame}
           className="bg-game-neon-purple hover:bg-game-neon-purple/80 text-white"
         >
@@ -125,17 +136,16 @@ const ReactionTest: React.FC<ReactionTestProps> = ({ onGameWin, onGameRestart })
           {bestTime !== null && bestTime <= targetTime && " ✓"}
         </div>
       </div>
-      
+
       <div
-        className={`w-64 h-64 rounded-md flex items-center justify-center cursor-pointer transition-colors duration-200 mb-6 ${
-          gameState === "waiting" 
-            ? "bg-red-600 hover:bg-red-700" 
+        className={`w-64 h-64 rounded-md flex items-center justify-center cursor-pointer transition-colors duration-200 mb-6 ${gameState === "waiting"
+            ? "bg-red-600 hover:bg-red-700"
             : gameState === "ready"
-            ? "bg-green-600 hover:bg-green-700"
-            : gameState === "tooEarly"
-            ? "bg-yellow-600"
-            : "bg-blue-600"
-        }`}
+              ? "bg-green-600 hover:bg-green-700"
+              : gameState === "tooEarly"
+                ? "bg-yellow-600"
+                : "bg-blue-600"
+          }`}
         onClick={handleClick}
       >
         <div className="text-white text-center p-4">
@@ -145,14 +155,14 @@ const ReactionTest: React.FC<ReactionTestProps> = ({ onGameWin, onGameRestart })
           {gameState === "tooEarly" && "Too early!"}
         </div>
       </div>
-      
+
       <div className="text-gray-300 mb-4">
         {attempts >= requiredAttempts && !gameWon && (
           <p>Your best time wasn't fast enough. Try again!</p>
         )}
       </div>
-      
-      <Button 
+
+      <Button
         onClick={restartGame}
         variant="outline"
         className="border-gray-600 text-gray-400 hover:bg-gray-800"
