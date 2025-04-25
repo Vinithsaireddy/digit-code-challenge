@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, RefreshCcw } from "lucide-react";
@@ -67,14 +66,14 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onGameWin, onGameRestart }) =
     // Flip the card
     const newFlippedCards = [...flippedCards, id];
     setFlippedCards(newFlippedCards);
-    
+
     // If this is the second card, check for a match
     if (newFlippedCards.length === 2) {
       setMoves(moves + 1);
       const [firstId, secondId] = newFlippedCards;
       const firstCard = cards.find(card => card.id === firstId);
       const secondCard = cards.find(card => card.id === secondId);
-      
+
       if (firstCard && secondCard && firstCard.value === secondCard.value) {
         // Match found!
         const updatedCards = cards.map(card => {
@@ -86,7 +85,7 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onGameWin, onGameRestart }) =
         setCards(updatedCards);
         setMatchedPairs(matchedPairs + 1);
         setFlippedCards([]);
-        
+
         // Check if all pairs are matched
         if (matchedPairs + 1 === totalPairs) {
           setGameWon(true);
@@ -99,7 +98,7 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onGameWin, onGameRestart }) =
       }
     }
   };
-  
+
   // Effect to check if player has won
   useEffect(() => {
     if (gameWon) {
@@ -120,7 +119,19 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onGameWin, onGameRestart }) =
         <p className="text-gray-300 mb-6 text-center">
           Match all pairs of cards to win! Find all {totalPairs} pairs to earn a digit.
         </p>
-        <Button 
+        <div className="bg-game-dark-card p-4 rounded-lg border border-gray-700 text-left max-w-md w-full mb-6">
+          <h4 className="text-lg font-semibold text-game-neon-purple mb-2">📜 Rules</h4>
+          <ul className="list-disc list-inside text-gray-300 space-y-1">
+          <li>Click on a card to flip it and reveal its emoji.</li>
+            <li>Click on another card to try to find a matching pair.</li>
+            <li>If the two cards match, they will stay flipped and you earn a pair.</li>
+            <li>If they do not match, they will flip back after a short delay.</li>
+            <li>Continue matching pairs until all pairs are found.</li>
+            <li>The game ends when all pairs are matched.</li>
+          </ul>
+        </div>
+
+        <Button
           onClick={initializeGame}
           className="bg-game-neon-purple hover:bg-game-neon-purple/80 text-white"
         >
@@ -136,18 +147,17 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onGameWin, onGameRestart }) =
         <div className="text-gray-300">Moves: {moves}</div>
         <div className="text-gray-300">Pairs: {matchedPairs}/{totalPairs}</div>
       </div>
-      
+
       <div className="grid grid-cols-4 gap-2 mb-6">
         {cards.map(card => (
           <div
             key={card.id}
-            className={`w-16 h-16 flex items-center justify-center rounded-md cursor-pointer transition-all duration-300 transform ${
-              card.isMatched
-                ? "bg-green-600 text-white"
-                : flippedCards.includes(card.id)
+            className={`w-16 h-16 flex items-center justify-center rounded-md cursor-pointer transition-all duration-300 transform ${card.isMatched
+              ? "bg-green-600 text-white"
+              : flippedCards.includes(card.id)
                 ? "bg-game-dark-card border-2 border-game-neon-cyan"
                 : "bg-game-dark-surface border border-gray-700"
-            }`}
+              }`}
             onClick={() => handleCardClick(card.id)}
           >
             {(card.isMatched || flippedCards.includes(card.id)) ? (
@@ -156,8 +166,8 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onGameWin, onGameRestart }) =
           </div>
         ))}
       </div>
-      
-      <Button 
+
+      <Button
         onClick={restartGame}
         variant="outline"
         className="border-gray-600 text-gray-400 hover:bg-gray-800"
