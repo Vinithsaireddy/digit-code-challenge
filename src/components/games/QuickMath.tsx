@@ -18,15 +18,15 @@ const QuickMath: React.FC<QuickMathProps> = ({ onGameWin, onGameRestart }) => {
 
   // Required score to win
   const requiredScore = 10;
-  
+
   // Generate a random math problem
   const generateProblem = () => {
     const operations = ["+", "-", "*"];
     const operation = operations[Math.floor(Math.random() * operations.length)];
-    
+
     let num1: number, num2: number, answer: number;
-    
-    switch(operation) {
+
+    switch (operation) {
       case "+":
         num1 = Math.floor(Math.random() * 50) + 1;
         num2 = Math.floor(Math.random() * 50) + 1;
@@ -47,11 +47,11 @@ const QuickMath: React.FC<QuickMathProps> = ({ onGameWin, onGameRestart }) => {
         num2 = 0;
         answer = 0;
     }
-    
+
     const question = `${num1} ${operation} ${num2}`;
     return { question, answer };
   };
-  
+
   // Start game
   const startGame = () => {
     setGameStarted(true);
@@ -60,54 +60,54 @@ const QuickMath: React.FC<QuickMathProps> = ({ onGameWin, onGameRestart }) => {
     setUserAnswer("");
     setCurrentProblem(generateProblem());
   };
-  
+
   // Handle user input
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserAnswer(e.target.value);
   };
-  
+
   // Handle answer submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const userNum = parseInt(userAnswer, 10);
-    
+
     if (userNum === currentProblem.answer) {
       setScore(score + 1);
-      
+
       // Check if player has won
       if (score + 1 >= requiredScore) {
         setGameWon(true);
         return;
       }
     }
-    
+
     // Generate a new problem either way
     setCurrentProblem(generateProblem());
     setUserAnswer("");
   };
-  
+
   // Timer effect
   useEffect(() => {
     if (gameStarted && !gameWon && timeLeft > 0) {
       const timer = setTimeout(() => {
         setTimeLeft(prev => prev - 1);
       }, 1000);
-      
+
       return () => clearTimeout(timer);
     } else if (timeLeft === 0 && gameStarted) {
       // Game over due to time
       setGameStarted(false);
     }
   }, [timeLeft, gameStarted, gameWon]);
-  
+
   // Effect to check if player has won
   useEffect(() => {
     if (gameWon) {
       onGameWin();
     }
   }, [gameWon, onGameWin]);
-  
+
   const restartGame = () => {
     setGameStarted(false);
     setGameWon(false);
@@ -122,7 +122,17 @@ const QuickMath: React.FC<QuickMathProps> = ({ onGameWin, onGameRestart }) => {
         <p className="text-gray-300 mb-6 text-center">
           Solve {requiredScore} math problems correctly within 60 seconds to win!
         </p>
-        <Button 
+        <div className="bg-game-dark-card p-4 rounded-lg border border-gray-700 text-left max-w-md w-full mb-6">
+          <h4 className="text-lg font-semibold text-game-neon-purple mb-2">📜 Rules</h4>
+          <ul className="list-disc list-inside text-gray-300 space-y-1">
+            <li>You have <span className="text-game-neon-cyan font-bold">60 seconds</span> to complete the game.</li>
+            <li>Solve <span className="text-game-neon-cyan font-bold">{requiredScore}</span> math problems correctly to win.</li>
+            <li>Each problem can be addition, subtraction, or multiplication.</li>
+            <li>Only correct answers count towards your score.</li>
+            <li>The timer starts once the game begins — so think fast!</li>
+          </ul>
+        </div>
+        <Button
           onClick={startGame}
           className="bg-game-neon-purple hover:bg-game-neon-purple/80 text-white"
         >
@@ -140,12 +150,12 @@ const QuickMath: React.FC<QuickMathProps> = ({ onGameWin, onGameRestart }) => {
           Time: {timeLeft}s
         </div>
       </div>
-      
+
       <div className="bg-game-dark-card p-6 rounded-lg border border-gray-700 mb-6 w-full max-w-md">
         <div className="text-3xl text-center text-white mb-6">
           {currentProblem.question} = ?
         </div>
-        
+
         <form onSubmit={handleSubmit} className="flex flex-col items-center">
           <input
             type="number"
@@ -155,8 +165,8 @@ const QuickMath: React.FC<QuickMathProps> = ({ onGameWin, onGameRestart }) => {
             placeholder="Your answer"
             autoFocus
           />
-          
-          <Button 
+
+          <Button
             type="submit"
             className="bg-game-neon-cyan text-black hover:bg-game-neon-cyan/80 w-full"
           >
@@ -164,8 +174,8 @@ const QuickMath: React.FC<QuickMathProps> = ({ onGameWin, onGameRestart }) => {
           </Button>
         </form>
       </div>
-      
-      <Button 
+
+      <Button
         onClick={restartGame}
         variant="outline"
         className="border-gray-600 text-gray-400 hover:bg-gray-800"
