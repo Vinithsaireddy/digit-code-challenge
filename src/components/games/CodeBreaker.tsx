@@ -20,31 +20,20 @@ const CodeBreaker: React.FC<CodeBreakerProps> = ({ onGameWin, onGameRestart }) =
   const [selectedPosition, setSelectedPosition] = useState<number>(0);
   const [gameWon, setGameWon] = useState<boolean>(false);
   const [attempts, setAttempts] = useState<number>(0);
+  const [hintsUsed, setHintsUsed] = useState<boolean>(false);
 
-  // Maximum attempts allowed
-  const maxAttempts = 10;
+  const maxAttempts = 15;
+  const digits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
-  // Available colors
-  const colors = [
-    "bg-red-500",
-    "bg-blue-500",
-    "bg-green-500",
-    "bg-yellow-500",
-    "bg-purple-500",
-    "bg-pink-500",
-  ];
-
-  // Generate a random code
   const generateCode = () => {
-    const code = [];
+    const code: string[] = [];
     for (let i = 0; i < 4; i++) {
-      const randomIndex = Math.floor(Math.random() * colors.length);
-      code.push(colors[randomIndex]);
+      const randomDigit = digits[Math.floor(Math.random() * digits.length)];
+      code.push(randomDigit);
     }
     return code;
   };
 
-  // Start game
   const startGame = () => {
     const newCode = generateCode();
     setSecretCode(newCode);
@@ -54,39 +43,34 @@ const CodeBreaker: React.FC<CodeBreakerProps> = ({ onGameWin, onGameRestart }) =
     setSelectedPosition(0);
     setGameWon(false);
     setAttempts(0);
+    setHintsUsed(false);
   };
 
-  // Select a position to place a color
   const selectPosition = (position: number) => {
     setSelectedPosition(position);
   };
 
-  // Select a color for the current position
-  const selectColor = (color: string) => {
+  const selectDigit = (digit: string) => {
     const newGuess = [...currentGuess];
-    newGuess[selectedPosition] = color;
+    newGuess[selectedPosition] = digit;
     setCurrentGuess(newGuess);
 
-    // Auto-advance to the next empty position
-    const nextEmptyIndex = newGuess.findIndex(c => c === "");
+    const nextEmptyIndex = newGuess.findIndex(d => d === "");
     if (nextEmptyIndex !== -1) {
       setSelectedPosition(nextEmptyIndex);
     }
   };
 
-  // Submit a guess
   const submitGuess = () => {
-    // Ensure all positions have a color
-    if (currentGuess.some(color => color === "")) return;
+    if (currentGuess.some(d => d === "")) return;
 
-    // Calculate correct and misplaced
     let correct = 0;
     let misplaced = 0;
 
     const codeCopy = [...secretCode];
     const guessCopy = [...currentGuess];
 
-    // First check for exact matches
+    // Check for exact matches
     for (let i = 0; i < secretCode.length; i++) {
       if (guessCopy[i] === codeCopy[i]) {
         correct++;
@@ -95,10 +79,10 @@ const CodeBreaker: React.FC<CodeBreakerProps> = ({ onGameWin, onGameRestart }) =
       }
     }
 
-    // Then check for misplaced matches
+    // Check for misplaced digits
     for (let i = 0; i < secretCode.length; i++) {
       if (guessCopy[i] !== "matched") {
-        const index = codeCopy.findIndex(color => color === guessCopy[i]);
+        const index = codeCopy.findIndex(d => d === guessCopy[i]);
         if (index !== -1) {
           misplaced++;
           codeCopy[index] = "counted";
@@ -106,29 +90,25 @@ const CodeBreaker: React.FC<CodeBreakerProps> = ({ onGameWin, onGameRestart }) =
       }
     }
 
-    // Add to history
     const newGuessEntry: Guess = {
       code: currentGuess,
       feedback: { correct, misplaced }
     };
 
-    const newHistory = [...guessHistory, newGuessEntry];
-    setGuessHistory(newHistory);
-    setAttempts(attempts + 1);
+    setGuessHistory([...guessHistory, newGuessEntry]);
+    const nextAttempts = attempts + 1;
+    setAttempts(nextAttempts);
 
-    // Check if player has won
     if (correct === 4) {
       setGameWon(true);
-    } else if (attempts + 1 >= maxAttempts) {
-      // Player has lost if they've used all attempts
+    } else if (nextAttempts >= maxAttempts) {
+      // Game over handled below
     } else {
-      // Reset for next guess
       setCurrentGuess(["", "", "", ""]);
       setSelectedPosition(0);
     }
   };
 
-  // Effect to check if player has won
   useEffect(() => {
     if (gameWon) {
       onGameWin();
@@ -140,29 +120,24 @@ const CodeBreaker: React.FC<CodeBreakerProps> = ({ onGameWin, onGameRestart }) =
     onGameRestart();
   };
 
-  console.log("Correct pattern was:", secretCode);
+  const sumOfSecretCode = secretCode.reduce((sum, digit) => sum + Number(digit), 0);
 
-  // Render start screen
   if (!gameStarted) {
-    // Inside: if (!gameStarted) { return (...) }
-
     return (
       <div className="flex flex-col items-center justify-center p-6">
         <h3 className="text-xl font-bold text-game-neon-cyan mb-6">Code Breaker Challenge</h3>
-
-        {/* 📌 Add rules section here */}
         <div className="bg-gray-800 p-4 rounded-md text-sm text-gray-300 mb-6 max-w-md">
           <h4 className="text-white font-semibold mb-2">How to Play:</h4>
           <ul className="list-disc pl-5 space-y-1">
-            <li>The secret code is made up of 4 colors randomly selected.</li>
-            <li>Select colors and assign them to each position in your guess.</li>
-            <li>After submitting, you'll get feedback:</li>
-            <ul className="list-disc pl-6 space-y-1">
-              <li><strong>Correct:</strong> Color is in the correct position.</li>
-              <li><strong>Misplaced:</strong> Color is correct but in the wrong position.</li>
+            <li>The secret code is made up of 4 digits (0-9).</li>
+            <li>Select digits and assign them to each position in your guess.</li>
+            <li>You'll get feedback after each guess:</li>
+            <ul className="pl-6 list-disc">
+              <li><strong>Correct:</strong> Digit is in the correct position.</li>
+              <li><strong>Misplaced:</strong> Digit is correct but in the wrong position.</li>
             </ul>
-            <li>You have <strong>{maxAttempts} attempts</strong> to guess the correct code.</li>
-            <li>If all 4 colors are correct and in the right order, you win!</li>
+            <li>You have <strong>{maxAttempts} attempts</strong> to guess the code.</li>
+            <li>After 10 attempts, a hint will be revealed: the sum of the code digits.</li>
           </ul>
         </div>
 
@@ -174,7 +149,6 @@ const CodeBreaker: React.FC<CodeBreakerProps> = ({ onGameWin, onGameRestart }) =
         </Button>
       </div>
     );
-
   }
 
   return (
@@ -183,31 +157,35 @@ const CodeBreaker: React.FC<CodeBreakerProps> = ({ onGameWin, onGameRestart }) =
         <div className="text-gray-300">Attempts: {attempts}/{maxAttempts}</div>
       </div>
 
-      {/* Color selection */}
-      <div className="flex gap-2 mb-6">
-        {colors.map((color, index) => (
+      {/* Digit selection */}
+      <div className="grid grid-cols-5 gap-2 mb-6">
+        {digits.map((digit, index) => (
           <button
             key={index}
-            className={`w-8 h-8 rounded-full ${color} hover:scale-110 transition-transform`}
-            onClick={() => selectColor(color)}
-          />
+            className="w-10 h-10 rounded-md bg-gray-700 text-white hover:bg-gray-600"
+            onClick={() => selectDigit(digit)}
+          >
+            {digit}
+          </button>
         ))}
       </div>
 
       {/* Current guess */}
       <div className="flex gap-2 mb-6 p-2 bg-game-dark-card rounded-md border border-gray-700">
-        {currentGuess.map((color, index) => (
+        {currentGuess.map((digit, index) => (
           <button
             key={index}
-            className={`w-10 h-10 rounded-full border-2 transition-all ${color || "bg-gray-800"
-              } ${selectedPosition === index ? "border-white scale-110" : "border-transparent"}`}
+            className={`w-10 h-10 rounded-md text-white font-bold text-lg border-2 
+              ${selectedPosition === index ? "border-white bg-gray-800" : "border-transparent bg-gray-700"}`}
             onClick={() => selectPosition(index)}
-          />
+          >
+            {digit}
+          </button>
         ))}
 
         <Button
           onClick={submitGuess}
-          disabled={currentGuess.some(color => color === "")}
+          disabled={currentGuess.some(d => d === "")}
           className="ml-4 bg-game-neon-cyan text-black hover:bg-game-neon-cyan/80"
         >
           Submit
@@ -218,31 +196,40 @@ const CodeBreaker: React.FC<CodeBreakerProps> = ({ onGameWin, onGameRestart }) =
       <div className="w-full max-h-64 overflow-y-auto space-y-2 mb-6">
         {guessHistory.map((guess, index) => (
           <div key={index} className="flex items-center p-2 bg-game-dark-surface rounded-md justify-between">
-            <div className="flex gap-2">
-              {guess.code.map((color, cIndex) => (
+            <div className="flex gap-2 text-white">
+              {guess.code.map((digit, i) => (
                 <div
-                  key={cIndex}
-                  className={`w-8 h-8 rounded-full ${color}`}
-                />
+                  key={i}
+                  className="w-8 h-8 flex items-center justify-center bg-gray-700 rounded-md"
+                >
+                  {digit}
+                </div>
               ))}
             </div>
 
-            <div className="flex items-center gap-1">
-              {/* Display feedback: text for correct and misplaced */}
-              <div className="text-gray-300">
-                {guess.feedback.correct} correct, {guess.feedback.misplaced} misplaced
-              </div>
+            <div className="text-gray-300 text-sm">
+              {guess.feedback.correct} correct, {guess.feedback.misplaced} misplaced
             </div>
           </div>
         ))}
       </div>
 
+      {/* Hint */}
+      {attempts >= 10 && !hintsUsed && (
+        <div className="text-yellow-400 font-semibold mb-4">
+          🔍 Hint: The sum of the digits in the secret code is <strong>{sumOfSecretCode}</strong>
+        </div>
+      )}
+
+      {/* Game Over */}
       {attempts >= maxAttempts && !gameWon && (
         <div className="text-center mb-4 text-red-400">
           <p>Game over! You've used all your attempts.</p>
-          <div className="flex gap-2 justify-center mt-2">
-            {secretCode.map((color, index) => (
-              <div key={index} className={`w-8 h-8 rounded-full ${color}`} />
+          <div className="flex gap-2 justify-center mt-2 text-white">
+            {secretCode.map((digit, index) => (
+              <div key={index} className="w-8 h-8 flex items-center justify-center bg-gray-700 rounded-md">
+                {digit}
+              </div>
             ))}
           </div>
         </div>
@@ -251,7 +238,7 @@ const CodeBreaker: React.FC<CodeBreakerProps> = ({ onGameWin, onGameRestart }) =
       <Button
         onClick={restartGame}
         variant="outline"
-        className="border-gray-600 text-gray-400 hover:bg-gray-800"
+        className="border-gray-600 text-gray-400 hover:bg-gray-800 mt-2"
       >
         <RefreshCcw className="mr-2" size={16} />
         Restart
